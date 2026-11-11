@@ -148,3 +148,4 @@ export const rulePayPalParity: PolicyRule = (cart, mandate, context) => {
     isFatal: true,
   };
 };
+
