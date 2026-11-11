@@ -46,3 +46,4 @@ export async function searchChannel3(params: Channel3SearchParams): Promise<Cand
     return getMockCandidates(params.query);
   }
 }
+

@@ -85,3 +85,4 @@ mandate/
             ├── agent/run/route.ts       # POST /api/agent/run (SSE stream)
             └── negotiate/start/route.ts # POST /api/negotiate/start (SSE stream)
 ```
+

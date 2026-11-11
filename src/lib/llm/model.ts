@@ -21,3 +21,4 @@ export function isLLMConfigured(): boolean {
   const key = process.env.GEMINI_API_KEY;
   return Boolean(key && key !== "mock_gemini_key");
 }
+

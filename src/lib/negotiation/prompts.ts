@@ -15,3 +15,4 @@ CRITICAL RULES:
 2. GOAL: Maximize user savings while securing the item. Make reasonable counter-offers.
 3. CONVERGENCE: Aim to close the deal within 3 to 4 rounds.
 4. OUTPUT FORMAT: Always include your exact proposed offer price in USD.`;
+

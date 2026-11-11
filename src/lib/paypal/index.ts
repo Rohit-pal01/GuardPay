@@ -24,3 +24,4 @@ export async function capturePayPalOrder(paypalOrderId: string, cart: Cart): Pro
     capturedAt: new Date().toISOString(),
   };
 }
+

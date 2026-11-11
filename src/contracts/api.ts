@@ -44,3 +44,4 @@ export type StartNegotiateRequest = z.infer<typeof StartNegotiateRequestSchema>;
 export type ApproveCartRequest = z.infer<typeof ApproveCartRequestSchema>;
 export type CreateOrderRequest = z.infer<typeof CreateOrderRequestSchema>;
 export type CaptureOrderRequest = z.infer<typeof CaptureOrderRequestSchema>;
+

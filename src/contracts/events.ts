@@ -31,3 +31,4 @@ export const AuditEventSchema = AgentEventSchema;
 export type AgentEventType = z.infer<typeof AgentEventTypeSchema>;
 export type AgentEvent = z.infer<typeof AgentEventSchema>;
 export type AuditEvent = z.infer<typeof AuditEventSchema>;
+

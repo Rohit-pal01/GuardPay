@@ -26,3 +26,4 @@ export const NegotiationSchema = z.object({
 export type NegotiationTurn = z.infer<typeof NegotiationTurnSchema>;
 export type NegotiationStatus = z.infer<typeof NegotiationStatusSchema>;
 export type Negotiation = z.infer<typeof NegotiationSchema>;
+

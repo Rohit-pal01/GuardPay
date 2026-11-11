@@ -127,3 +127,4 @@ function resolveRelativeDate(dateStr: string): string {
 
   return dateStr;
 }
+

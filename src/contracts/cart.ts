@@ -25,3 +25,4 @@ export const CartSchema = z.object({
 
 export type CartItem = z.infer<typeof CartItemSchema>;
 export type Cart = z.infer<typeof CartSchema>;
+

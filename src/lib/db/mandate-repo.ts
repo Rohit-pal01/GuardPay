@@ -29,3 +29,4 @@ export function saveMandate(mandate: Mandate): Mandate {
 export function listMandates(): Mandate[] {
   return Array.from(mandateStore.values());
 }
+

@@ -104,3 +104,4 @@ export function mapRawToCandidate(raw: any): Candidate {
       : { cost: 0, estimated: true },
   });
 }
+

@@ -52,3 +52,4 @@ Our fundamental design rule:
 
 ## 5. Honest Sandbox Disclosure
 Channel3 returns real-world products with retailer links. PayPal sandbox accounts cannot settle directly to external commercial merchants, so our sandbox business account acts as the merchant of record for demonstration, creating orders with authentic product line items, amounts, and shipping specs.
+

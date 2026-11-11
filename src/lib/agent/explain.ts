@@ -105,3 +105,4 @@ function generateFallbackExplanation(
 
   return reason.trim();
 }
+

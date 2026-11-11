@@ -12,3 +12,4 @@ export function getAuditEvents(sessionId?: string): AuditEvent[] {
   if (!sessionId) return [...auditLogs];
   return auditLogs.filter((e) => e.sessionId === sessionId);
 }
+

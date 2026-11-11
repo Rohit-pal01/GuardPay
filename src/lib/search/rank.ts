@@ -61,3 +61,4 @@ export function rankCandidates(
 
   return scored.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 }
+

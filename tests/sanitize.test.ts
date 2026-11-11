@@ -47,3 +47,4 @@ describe("Product Text Sanitization & Prompt-Injection Defense", () => {
     expect(formatted).toContain("[REDACTED_COMMAND]");
   });
 });
+

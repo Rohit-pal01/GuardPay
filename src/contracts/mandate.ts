@@ -13,3 +13,4 @@ export const MandateSchema = z.object({
 });
 
 export type Mandate = z.infer<typeof MandateSchema>;
+

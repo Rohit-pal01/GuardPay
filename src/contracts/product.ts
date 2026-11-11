@@ -26,3 +26,4 @@ export const CandidateSchema = z.object({
 
 export type ShippingInfo = z.infer<typeof ShippingInfoSchema>;
 export type Candidate = z.infer<typeof CandidateSchema>;
+

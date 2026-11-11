@@ -27,3 +27,4 @@ describe("parseIntent", () => {
     expect(result.query.toLowerCase()).toContain("mechanical keyboard");
   });
 });
+
