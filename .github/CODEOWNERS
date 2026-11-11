@@ -1,0 +1,33 @@
+# Default: Integrator reviews anything not listed below
+*                           @paramsharma01
+
+# A1: Payments (A2 is backup reviewer)
+/src/lib/paypal/            @paramsharma01 @ombhadri
+/src/app/api/orders/        @paramsharma01 @ombhadri
+
+# A2: Guardrails and Data (A1 is backup reviewer)
+/src/lib/policy/            @ombhadri @paramsharma01
+/src/lib/db/                @ombhadri @paramsharma01
+/src/app/api/mandate/       @ombhadri @paramsharma01
+/src/app/api/cart/          @ombhadri @paramsharma01
+/src/app/api/audit/         @ombhadri @paramsharma01
+
+# Contracts: shared, all three groups must agree
+/src/contracts/             @paramsharma01 @ombhadri @rohit-pal01 @DevKumar005
+
+# B: AI Agent (A1 reviews as Integrator)
+/src/lib/agent/             @rohit-pal01 @paramsharma01
+/src/lib/search/            @rohit-pal01 @paramsharma01
+/src/lib/negotiation/       @rohit-pal01 @paramsharma01
+/src/lib/llm/               @rohit-pal01 @paramsharma01
+/src/app/api/agent/         @rohit-pal01 @paramsharma01
+/src/app/api/negotiate/     @rohit-pal01 @paramsharma01
+/fixtures/                  @rohit-pal01 @paramsharma01
+
+# C: Frontend and Demo (A1 reviews as Integrator)
+/src/app/page.tsx           @DevKumar005 @paramsharma01
+/src/app/layout.tsx         @DevKumar005 @paramsharma01
+/src/app/mandate/           @DevKumar005 @paramsharma01
+/src/app/receipt/           @DevKumar005 @paramsharma01
+/src/app/audit/             @DevKumar005 @paramsharma01
+/src/components/            @DevKumar005 @paramsharma01
