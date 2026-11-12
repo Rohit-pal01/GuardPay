@@ -1,0 +1,47 @@
+{
+  "sony_wh1000xm4": {
+    "candidateId": "ch3_prod_sony_wh1000xm4",
+    "listingPrice": 228.00,
+    "floorPrice": 195.00,
+    "ceilingPrice": 250.00,
+    "finalPrice": 209.00,
+    "turns": [
+      {
+        "round": 1,
+        "speaker": "buyer",
+        "offerPrice": 190.00,
+        "message": "Hello! I am ready to purchase the Sony WH-1000XM4 today. Would you be willing to accept $190.00?",
+        "timestamp": "2026-11-11T12:00:00.000Z"
+      },
+      {
+        "round": 1,
+        "speaker": "seller",
+        "offerPrice": 218.00,
+        "message": "Thanks for your interest! $190 is below our store cost for this premium ANC model, but I can offer an exclusive discount down to $218.00.",
+        "timestamp": "2026-11-11T12:00:01.000Z"
+      },
+      {
+        "round": 2,
+        "speaker": "buyer",
+        "offerPrice": 205.00,
+        "message": "I appreciate the discount. How about we meet in the middle at $205.00? I can complete checkout immediately.",
+        "timestamp": "2026-11-11T12:00:02.000Z"
+      },
+      {
+        "round": 2,
+        "speaker": "seller",
+        "offerPrice": 209.00,
+        "message": "You drive a hard bargain! I can do $209.00 with free expedited 2-day shipping if you lock it in now.",
+        "timestamp": "2026-11-11T12:00:03.000Z"
+      },
+      {
+        "round": 3,
+        "speaker": "buyer",
+        "offerPrice": 209.00,
+        "message": "Deal! $209.00 with 2-day shipping is inside our Mandate. Let's proceed to PayPal checkout.",
+        "timestamp": "2026-11-11T12:00:04.000Z"
+      }
+    ]
+  }
+}
+

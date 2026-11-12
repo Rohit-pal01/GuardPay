@@ -1,0 +1,21 @@
+{
+  "parse-intent:noise-cancelling headphones under $250 by Friday": {
+    "query": "noise-cancelling headphones",
+    "category": "Electronics",
+    "maxPrice": 250,
+    "deliverBy": "2026-11-13T23:59:59.000Z",
+    "features": ["noise-cancelling", "wireless"],
+    "rawRequest": "noise-cancelling headphones under $250 by Friday"
+  },
+  "parse-intent:noise-cancelling headphones under $200": {
+    "query": "noise-cancelling headphones",
+    "category": "Electronics",
+    "maxPrice": 200,
+    "features": ["noise-cancelling"],
+    "rawRequest": "noise-cancelling headphones under $200"
+  },
+  "explain:ch3_prod_sony_wh1000xm4": "Best overall balance: $228 falls well within the $250 mandate cap, offers top-tier ANC and arrives by Friday (2-day FedEx).",
+  "explain:ch3_prod_bose_qc45": "Strong runner-up: Premium comfort and legendary noise cancelling at $249, exactly under budget with 3-day delivery.",
+  "explain:ch3_prod_anker_q45": "Value pick: At $149.99, leaves over $94 in your mandate budget while providing 50-hour ANC battery life and next-day delivery."
+}
+
