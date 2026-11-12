@@ -11,6 +11,7 @@ import type {
   PolicyDecision,
 } from '@/contracts';
 import { roundCents } from '@/lib/utils';
+import { isCategoryAllowed } from '@/lib/policy/category-matching';
 
 const STORAGE_KEYS = {
   mandate: 'gaurdpay:mandate',
@@ -190,11 +191,10 @@ export function evaluateCartForUi(
     );
   }
 
-  const allowedSet = new Set(mandate.allowedCategories.map((c) => c.toLowerCase()));
   const blockedSet = new Set(mandate.blockedMerchants.map((m) => m.toLowerCase()));
 
   for (const item of cart.items) {
-    if (allowedSet.size > 0 && !allowedSet.has(item.category.toLowerCase())) {
+    if (mandate.allowedCategories.length > 0 && !isCategoryAllowed(item.category, mandate.allowedCategories)) {
       ruleIds.push('CATEGORY_NOT_ALLOWED');
       reasons.push(`Category "${item.category}" is outside allowed categories.`);
     }

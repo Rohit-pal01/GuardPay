@@ -1,4 +1,4 @@
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { ParsedIntent, ParsedIntentSchema } from "@/contracts/api";
 import { getLLMModel } from "@/lib/llm/model";
 import { getRecordedLLM, isReplayMode, saveRecordedLLM } from "@/lib/llm/replay";
@@ -30,16 +30,16 @@ export async function parseIntent(request: string): Promise<ParsedIntent> {
   const model = getLLMModel();
   if (model) {
     try {
-      const result = await generateObject({
+      const result = await generateText({
         model,
-        schema: ParsedIntentSchema,
+        output: Output.object({ schema: ParsedIntentSchema }),
         system: PARSE_INTENT_SYSTEM_PROMPT,
         prompt: `Parse this shopping request: "${trimmed}"`,
       });
 
-      if (result.object) {
-        saveRecordedLLM(cacheKey, result.object);
-        return result.object;
+      if (result.output) {
+        saveRecordedLLM(cacheKey, result.output);
+        return result.output;
       }
     } catch (err) {
       console.warn("LLM intent parsing failed, falling back to deterministic parser:", err);
