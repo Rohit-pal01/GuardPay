@@ -84,21 +84,30 @@ export function getMockCandidates(query: string = "headphones"): Candidate[] {
 }
 
 export function mapRawToCandidate(raw: Record<string, unknown>): Candidate {
+  const offers = Array.isArray(raw.offers)
+    ? raw.offers.filter((offer): offer is Record<string, unknown> => Boolean(offer) && typeof offer === "object")
+    : [];
+  const preferredOffer = offers.find((offer) => offer.availability !== "out_of_stock") ?? offers[0];
   const shipping =
     raw.shipping && typeof raw.shipping === "object"
       ? (raw.shipping as Record<string, unknown>)
       : undefined;
 
+  const brand = readString(raw.brand);
+  const category = readString(raw.category) ?? readString(Array.isArray(raw.categories) ? raw.categories[0] : undefined);
+  const imageUrl = readString(raw.image_url) ?? readString(raw.imageUrl) ?? readString(raw.image) ?? readImageUrl(raw.images);
+  const price = readNumber(raw.price) ?? readNumber(preferredOffer?.price) ?? 0;
+
   return CandidateSchema.parse({
     id: String(raw.id || raw.product_id || `prod_${Math.random().toString(36).substring(7)}`),
     title: String(raw.title || raw.name || "Untitled Product"),
     description: String(raw.description || ""),
-    price: Number(raw.price || 0),
+    price,
     currency: String(raw.currency || "USD"),
-    merchant: String(raw.merchant || raw.store || raw.brand || "Merchant"),
-    category: String(raw.category || "General"),
-    url: String(raw.url || raw.buy_url || raw.link || "https://example.com"),
-    imageUrl: raw.image_url || raw.imageUrl || raw.image,
+    merchant: String(raw.merchant || raw.store || readString(preferredOffer?.merchant) || readString(preferredOffer?.domain) || brand || "Merchant"),
+    category: category || "General",
+    url: String(raw.url || raw.buy_url || raw.link || preferredOffer?.url || "https://example.com"),
+    imageUrl,
     rating: typeof raw.rating === "number" ? raw.rating : undefined,
     availability: raw.availability === "out_of_stock" ? "out_of_stock" : "in_stock",
     shippingInfo: shipping
@@ -114,4 +123,33 @@ export function mapRawToCandidate(raw: Record<string, unknown>): Candidate {
         }
       : { cost: 0, estimated: true },
   });
+}
+
+function readString(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    for (const key of ["name", "title", "label", "value", "url", "domain"]) {
+      if (typeof record[key] === "string") return record[key] as string;
+    }
+  }
+  return undefined;
+}
+
+function readNumber(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) return Number(value);
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    for (const key of ["price", "amount", "value", "current"]) {
+      const number = readNumber(record[key]);
+      if (number !== undefined) return number;
+    }
+  }
+  return undefined;
+}
+
+function readImageUrl(value: unknown): string | undefined {
+  if (!Array.isArray(value)) return undefined;
+  return readString(value[0]);
 }

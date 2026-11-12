@@ -16,20 +16,16 @@ export async function searchChannel3(params: Channel3SearchParams): Promise<Cand
   }
 
   try {
-    const url = new URL("https://api.channel3.ai/v1/search");
-    url.searchParams.set("q", params.query);
-    if (params.category) {
-      url.searchParams.set("category", params.category);
-    }
-    if (params.limit) {
-      url.searchParams.set("limit", String(params.limit));
-    }
-
-    const res = await fetch(url.toString(), {
+    const res = await fetch("https://api.trychannel3.com/v1/search", {
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        "x-api-key": apiKey,
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        query: params.query,
+        limit: params.limit ?? 5,
+      }),
     });
 
     if (!res.ok) {
@@ -38,7 +34,13 @@ export async function searchChannel3(params: Channel3SearchParams): Promise<Cand
     }
 
     const data = await res.json();
-    const rawProducts = Array.isArray(data.products) ? data.products : (Array.isArray(data) ? data : []);
+    const rawProducts = Array.isArray(data.data)
+      ? data.data
+      : Array.isArray(data.products)
+        ? data.products
+        : Array.isArray(data)
+          ? data
+          : [];
 
     return rawProducts.map(mapRawToCandidate);
   } catch (err) {
