@@ -10,7 +10,7 @@ let cached: Db | null | undefined;
 export function getDb(): Db | null {
   if (cached !== undefined) return cached;
   const url = process.env.DATABASE_URL;
-  cached = url ? drizzle(neon(url), { schema }) : null;
+  cached = url?.startsWith("postgres") ? drizzle(neon(url), { schema }) : null;
   return cached;
 }
 

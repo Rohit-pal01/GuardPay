@@ -11,3 +11,7 @@ export type ApproveCartRequest = z.infer<typeof ApproveCartRequestSchema>;
 
 export const AuditQuerySchema = z.object({ sessionId: z.string().min(1) });
 export type AuditQuery = z.infer<typeof AuditQuerySchema>;
+export const CreateOrderRequestSchema = z.object({ cartId: z.string().min(1) });
+export const CaptureOrderRequestSchema = z.object({
+  cartId: z.string().min(1),
+});

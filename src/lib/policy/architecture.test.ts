@@ -3,7 +3,7 @@ import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
 
 // FR-A2-22 / NFR-1: no path to PayPal except the executor (A1's folder and A1's order routes excepted).
-const SRC = join(__dirname, "..", "..");
+const SRC = join(import.meta.dirname, "..", "..");
 const ALLOWED = [
   /^lib\/paypal\//,
   /^lib\/policy\/executor(\.test)?\.ts$/,

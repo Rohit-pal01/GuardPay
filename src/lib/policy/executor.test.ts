@@ -1,8 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Cart, Mandate, PaymentOrder } from "../../contracts";
 import { createMemoryRepos } from "../db";
-import { PaypalError, type PaypalClient } from "../paypal";
-import { createExecutor } from "./executor";
+import { createExecutor, type PaypalClient } from "./executor";
+
+class PaypalError extends Error {
+  code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.code = code;
+  }
+}
 
 const NOW = new Date("2026-11-11T12:00:00.000Z");
 const mandate: Mandate = {
@@ -274,11 +281,10 @@ describe("negotiation events (FR-A2-28)", () => {
   });
   it("rejects unknown event types at the boundary", async () => {
     const { repos } = setup();
-    // @ts-expect-error invalid type on purpose
     await expect(
       repos.audit.append({
         sessionId: "s1",
-        type: "made_up",
+        type: "made_up" as never,
         at: NOW.toISOString(),
       }),
     ).rejects.toThrow();

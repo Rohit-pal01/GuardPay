@@ -6,9 +6,20 @@ import type {
   PolicyDecision,
 } from "../../contracts";
 import { getRepos, type Repos } from "../db";
-import { paypal as defaultPaypal, type PaypalClient } from "../paypal";
 import { checkPolicy } from "./engine";
 import { cartTotalCents, type PolicyContext } from "./rules";
+import * as paypalModule from "../paypal";
+
+export interface PaypalClient {
+  createOrder(cart: Cart): Promise<PaymentOrder>;
+  getOrder(paypalOrderId: string): Promise<PaymentOrder>;
+  captureOrder(paypalOrderId: string): Promise<PaymentOrder>;
+}
+const defaultPaypal: PaypalClient = {
+  createOrder: (c) => paypalModule.createOrder(c),
+  getOrder: (id) => paypalModule.getOrder(id),
+  captureOrder: (id) => paypalModule.captureOrder(id),
+};
 
 /**
  * The safety gate (NFR-1). The ONLY code path that calls createOrder / captureOrder (FR-A2-18).

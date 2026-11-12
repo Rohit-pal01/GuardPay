@@ -51,15 +51,13 @@ export function createAuditRepo(b: Backend): AuditRepo {
   return {
     async append(e) {
       const a = toAudit(e);
-      await b.db
-        .insert(auditEvents)
-        .values({
-          id: a.id,
-          sessionId: a.sessionId,
-          type: a.type,
-          at: new Date(a.at),
-          data: a,
-        });
+      await b.db.insert(auditEvents).values({
+        id: a.id,
+        sessionId: a.sessionId,
+        type: a.type,
+        at: new Date(a.at),
+        data: a,
+      });
       return a;
     },
     async listBySession(sid) {

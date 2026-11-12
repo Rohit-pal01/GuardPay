@@ -1,4 +1,5 @@
 // FR-A2-32: wake the Render instance (and DB connection) before recording. Usage: APP_BASE_URL=https://... pnpm warm
+export {};
 const base = process.env.APP_BASE_URL;
 if (!base) {
   console.error("APP_BASE_URL is required.");

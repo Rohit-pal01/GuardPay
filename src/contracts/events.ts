@@ -22,7 +22,7 @@ export const AgentEventSchema = z.object({
   type: z.enum(AGENT_EVENT_TYPES),
   at: z.string().datetime(),
   message: z.string().optional(),
-  data: z.record(z.unknown()).optional(),
+  data: z.record(z.string(), z.unknown()).optional(),
 });
 export type AgentEvent = z.infer<typeof AgentEventSchema>;
 
