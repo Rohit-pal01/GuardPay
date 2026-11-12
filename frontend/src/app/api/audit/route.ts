@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const events = getAuditEvents(parsed.data.sessionId);
+    const events = await getAuditEvents(parsed.data.sessionId);
     return NextResponse.json(events);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

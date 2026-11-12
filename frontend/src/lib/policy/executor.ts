@@ -27,10 +27,10 @@ export async function executeCreateOrder(params: {
 }): Promise<ExecuteOrderCreateResult> {
   // Always fetch the authoritative cart record from the database.
   // Never trust untrustedCart.approved from client or agent.
-  const trustedCart = getCart(params.cartId);
+  const trustedCart = await getCart(params.cartId);
   if (!trustedCart) {
     const errorMsg = `Cart ${params.cartId} not found in database.`;
-    appendAuditEvent({
+    await appendAuditEvent({
       id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       sessionId: params.untrustedCart?.sessionId || 'unknown',
       type: 'error',
@@ -41,13 +41,13 @@ export async function executeCreateOrder(params: {
     throw new Error(errorMsg);
   }
 
-  const mandate = getMandate(trustedCart.mandateId) || getActiveMandate();
-  const sessionSpentTotal = getSessionSpent(trustedCart.sessionId);
+  const mandate = (await getMandate(trustedCart.mandateId)) || await getActiveMandate();
+  const sessionSpentTotal = await getSessionSpent(trustedCart.sessionId);
 
   // Evaluate deterministic policy rules
   const decision = evaluatePolicy(trustedCart, mandate, { sessionSpentTotal });
 
-  appendAuditEvent({
+  await appendAuditEvent({
     id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     sessionId: trustedCart.sessionId,
     type: 'policy_checked',
@@ -60,7 +60,7 @@ export async function executeCreateOrder(params: {
 
   // If hard policy denies, reject purchase
   if (decision.verdict === 'deny') {
-    appendAuditEvent({
+    await appendAuditEvent({
       id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       sessionId: trustedCart.sessionId,
       type: 'blocked',
@@ -76,7 +76,7 @@ export async function executeCreateOrder(params: {
   // If human approval is required, verify approval stored in the database
   if (decision.verdict === 'needs_approval') {
     if (!trustedCart.approved) {
-      appendAuditEvent({
+      await appendAuditEvent({
         id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         sessionId: trustedCart.sessionId,
         type: 'awaiting_approval',
@@ -92,9 +92,9 @@ export async function executeCreateOrder(params: {
 
   // Create PayPal order
   const { paypalOrderId, order } = await createPayPalOrder(trustedCart);
-  saveOrder(order);
+  await saveOrder(order);
 
-  appendAuditEvent({
+  await appendAuditEvent({
     id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     sessionId: trustedCart.sessionId,
     type: 'order_created',
@@ -114,19 +114,19 @@ export async function executeCreateOrder(params: {
 export async function executeCaptureOrder(params: {
   paypalOrderId: string;
 }): Promise<PaymentOrder> {
-  const order = getOrder(params.paypalOrderId);
+  const order = await getOrder(params.paypalOrderId);
   if (!order) {
     const errorMsg = `PaymentOrder ${params.paypalOrderId} not found.`;
     throw new Error(errorMsg);
   }
 
-  const trustedCart = getCart(order.cartId);
+  const trustedCart = await getCart(order.cartId);
   if (!trustedCart) {
     throw new Error(`Cart ${order.cartId} not found in database.`);
   }
 
-  const mandate = getMandate(trustedCart.mandateId) || getActiveMandate();
-  const sessionSpentTotal = getSessionSpent(trustedCart.sessionId);
+  const mandate = (await getMandate(trustedCart.mandateId)) || await getActiveMandate();
+  const sessionSpentTotal = await getSessionSpent(trustedCart.sessionId);
 
   // FR-A2-20: Re-check price drift and parity at capture time
   const captureDecision = evaluatePolicy(trustedCart, mandate, {
@@ -136,7 +136,7 @@ export async function executeCaptureOrder(params: {
   });
 
   if (captureDecision.verdict === 'deny') {
-    appendAuditEvent({
+    await appendAuditEvent({
       id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       sessionId: trustedCart.sessionId,
       type: 'blocked',
@@ -150,9 +150,9 @@ export async function executeCaptureOrder(params: {
   }
 
   const capturedOrder = await capturePayPalOrder(params.paypalOrderId, trustedCart);
-  saveOrder(capturedOrder);
+  await saveOrder(capturedOrder);
 
-  appendAuditEvent({
+  await appendAuditEvent({
     id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     sessionId: trustedCart.sessionId,
     type: 'payment_captured',

@@ -20,21 +20,21 @@ export async function POST(req: NextRequest) {
     }
 
     const { cartId } = parsed.data;
-    const cart = getCart(cartId);
+    const cart = await getCart(cartId);
 
     if (!cart) {
       return NextResponse.json({ error: `Cart ${cartId} not found` }, { status: 404 });
     }
 
     // Record authoritative approval in database (FR-A2-25 & Requirement 3)
-    const updated = updateCartApproval(cartId, true);
+    const updated = await updateCartApproval(cartId, true);
 
-    const mandate = getMandate(cart.mandateId) || getActiveMandate();
+    const mandate = (await getMandate(cart.mandateId)) || await getActiveMandate();
     const decision = evaluatePolicy(updated || cart, mandate, {
-      sessionSpentTotal: getSessionSpent(cart.sessionId),
+      sessionSpentTotal: await getSessionSpent(cart.sessionId),
     });
 
-    appendAuditEvent({
+    await appendAuditEvent({
       id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       sessionId: cart.sessionId,
       type: 'approved',

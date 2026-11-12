@@ -20,7 +20,7 @@ export async function createOrder(cart: Cart): Promise<PaymentOrder> {
 }
 
 export async function getOrder(paypalOrderId: string): Promise<PaymentOrder> {
-  const order = getStoredOrder(paypalOrderId);
+  const order = await getStoredOrder(paypalOrderId);
   if (order) {
     return order;
   }

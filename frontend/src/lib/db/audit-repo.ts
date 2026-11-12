@@ -1,76 +1,55 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { eq, sql } from 'drizzle-orm';
 import { type AuditEvent, AuditEventSchema } from '@/contracts/events';
+import { db, isDatabaseEnabled } from './client';
+import { auditEvents } from './schema';
 
 const auditLogs: AuditEvent[] = [];
-const AUDIT_FILE = path.join(process.cwd(), '.audit-log.json');
+const auditFile = path.join(process.cwd(), '.audit-log.json');
 
-// Restore persisted events on startup if present
-try {
-  if (fs.existsSync(AUDIT_FILE)) {
-    const raw = fs.readFileSync(AUDIT_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) {
-      for (const item of parsed) {
-        const validated = AuditEventSchema.safeParse(item);
-        if (validated.success) {
-          auditLogs.push(validated.data);
-        }
-      }
-    }
-  }
-} catch {
-  // Fall back silently to memory store
-}
-
-function persistLogs(): void {
+if (!isDatabaseEnabled) {
   try {
-    fs.writeFileSync(AUDIT_FILE, JSON.stringify(auditLogs, null, 2), 'utf-8');
-  } catch {
-    // Ignore file write errors in restricted environments
+    const parsed = JSON.parse(fs.readFileSync(auditFile, 'utf-8'));
+    if (Array.isArray(parsed)) auditLogs.push(...parsed.map((item) => AuditEventSchema.safeParse(item)).filter((result) => result.success).map((result) => result.data));
+  } catch { /* no local audit log yet */ }
+}
+
+function persistLocalLogs(): void {
+  if (!isDatabaseEnabled) {
+    try { fs.writeFileSync(auditFile, JSON.stringify(auditLogs, null, 2), 'utf-8'); } catch { /* non-persistent local environment */ }
   }
 }
 
-/**
- * Appends an AgentEvent as an AuditEvent to the persistent log.
- * FR-A2-7 & NFR-3 / NFR-4.
- */
-export function appendAuditEvent(event: AuditEvent): AuditEvent {
+export async function appendAuditEvent(event: AuditEvent): Promise<AuditEvent> {
   const parsed = AuditEventSchema.parse(event);
-  auditLogs.push(parsed);
-  persistLogs();
+  if (!isDatabaseEnabled) { auditLogs.push(parsed); persistLocalLogs(); return parsed; }
+  await db!.insert(auditEvents).values({
+    id: parsed.id, sessionId: parsed.sessionId, type: parsed.type, timestamp: parsed.timestamp,
+    message: parsed.message, data: parsed.data, payload: parsed.payload,
+    mandateId: parsed.mandateId, verdict: parsed.verdict,
+  }).onConflictDoNothing();
   return parsed;
 }
 
-/**
- * Retrieves audit events, optionally filtered by session ID.
- */
-export function getAuditEvents(sessionId?: string): AuditEvent[] {
-  if (!sessionId) return [...auditLogs];
-  return auditLogs.filter((e) => e.sessionId === sessionId);
+export async function getAuditEvents(sessionId?: string): Promise<AuditEvent[]> {
+  if (!isDatabaseEnabled) return sessionId ? auditLogs.filter((event) => event.sessionId === sessionId) : [...auditLogs];
+  const records = sessionId
+    ? await db!.select().from(auditEvents).where(eq(auditEvents.sessionId, sessionId))
+    : await db!.select().from(auditEvents);
+  return records.map((record) => AuditEventSchema.parse(record));
 }
 
-/**
- * Calculates total confirmed spend for a session from captured orders.
- */
-export function getSessionSpent(sessionId?: string): number {
+export async function getSessionSpent(sessionId?: string): Promise<number> {
   if (!sessionId) return 0;
-  return auditLogs
-    .filter((e) => e.sessionId === sessionId && e.type === 'payment_captured')
-    .reduce((acc, curr) => {
-      const data = curr.data as { amount?: number; total?: number } | undefined;
-      const amt = data?.amount ?? data?.total ?? 0;
-      return acc + amt;
-    }, 0);
+  if (!isDatabaseEnabled) return auditLogs.filter((event) => event.sessionId === sessionId && event.type === 'payment_captured').reduce((total, event) => total + Number((event.data as { amount?: number; total?: number } | undefined)?.amount ?? (event.data as { total?: number } | undefined)?.total ?? 0), 0);
+  const [result] = await db!.select({ total: sql<string>`coalesce(sum((data->>'amount')::numeric), 0)` }).from(auditEvents).where(sql`${auditEvents.sessionId} = ${sessionId} and ${auditEvents.type} = 'payment_captured'`);
+  return Number(result?.total ?? 0);
 }
 
-export function resetAuditLogs(): void {
-  auditLogs.length = 0;
-  try {
-    if (fs.existsSync(AUDIT_FILE)) {
-      fs.unlinkSync(AUDIT_FILE);
-    }
-  } catch {
-    // ignore
+export async function resetAuditLogs(): Promise<void> {
+  if (!isDatabaseEnabled) {
+    auditLogs.length = 0;
+    try { fs.unlinkSync(auditFile); } catch { /* absent file */ }
   }
 }

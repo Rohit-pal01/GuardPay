@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { request: userRequest, mandateId, sessionId } = parsed.data;
-    const mandate = getMandate(mandateId);
+    const mandate = await getMandate(mandateId);
 
     if (!mandate) {
       return NextResponse.json(
@@ -47,17 +47,17 @@ export async function POST(req: NextRequest) {
           break;
         }
         events.push(step.value);
-        appendAuditEvent(step.value);
+        await appendAuditEvent(step.value);
       }
 
       if (result.cart) {
-        saveCart(result.cart);
+        await saveCart(result.cart);
         const decision = evaluatePolicy(result.cart, mandate, {
-          sessionSpentTotal: getSessionSpent(sessionId),
+          sessionSpentTotal: await getSessionSpent(sessionId),
         });
         const policyEvent = createPolicyEvent(sessionId, result.cart.id, decision);
         events.push(policyEvent);
-        appendAuditEvent(policyEvent);
+        await appendAuditEvent(policyEvent);
       }
 
       return NextResponse.json({
@@ -79,19 +79,19 @@ export async function POST(req: NextRequest) {
             if (step.done) {
               const finalResult = step.value;
               if (finalResult.cart) {
-                saveCart(finalResult.cart);
+                await saveCart(finalResult.cart);
                 const decision = evaluatePolicy(finalResult.cart, mandate, {
-                  sessionSpentTotal: getSessionSpent(sessionId),
+                  sessionSpentTotal: await getSessionSpent(sessionId),
                 });
                 const policyEvent = createPolicyEvent(sessionId, finalResult.cart.id, decision);
-                appendAuditEvent(policyEvent);
+                await appendAuditEvent(policyEvent);
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify(policyEvent)}\n\n`));
               }
               break;
             }
 
             const event = step.value;
-            appendAuditEvent(event);
+            await appendAuditEvent(event);
             const payload = `data: ${JSON.stringify(event)}\n\n`;
             controller.enqueue(encoder.encode(payload));
           }

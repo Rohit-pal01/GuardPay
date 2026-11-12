@@ -50,17 +50,17 @@ describe('Server-Side Safety Gate & Executor (Member A2)', () => {
     priceSnapshotAt: new Date().toISOString(),
   };
 
-  beforeEach(() => {
-    resetCarts();
-    resetMandates();
-    resetOrders();
-    resetAuditLogs();
-    saveMandate(mandate);
+  beforeEach(async () => {
+    await resetCarts();
+    await resetMandates();
+    await resetOrders();
+    await resetAuditLogs();
+    await saveMandate(mandate);
   });
 
   it('Requirement 3: NEVER trusts cart.approved from caller; only trusts approval stored in DB by /api/cart/approve', async () => {
     // Step 1: Save the draft cart in the database (approved: false)
-    saveCart(sampleCart);
+    await saveCart(sampleCart);
 
     // Step 2: An untrusted client or agent tries to bypass the gate by claiming approved: true
     const untrustedCartFromClient: Cart = {
@@ -78,11 +78,11 @@ describe('Server-Side Safety Gate & Executor (Member A2)', () => {
     ).rejects.toThrow(/has not been approved via \/api\/cart\/approve/);
 
     // Verify database record remained untampered
-    const dbCartBefore = getCart(sampleCart.id);
+    const dbCartBefore = await getCart(sampleCart.id);
     expect(dbCartBefore?.approved).toBe(false);
 
     // Step 4: Now simulate legitimate human approval saved by /api/cart/approve
-    const approvedDbCart = updateCartApproval(sampleCart.id, true);
+    const approvedDbCart = await updateCartApproval(sampleCart.id, true);
     expect(approvedDbCart?.approved).toBe(true);
 
     // Step 5: Executor now allows order creation
@@ -92,7 +92,7 @@ describe('Server-Side Safety Gate & Executor (Member A2)', () => {
     expect(result.order.amount).toBe(162);
 
     // Step 6: Verify audit event log records order_created
-    const events = getAuditEvents(sampleCart.sessionId);
+    const events = await getAuditEvents(sampleCart.sessionId);
     expect(events.some((e) => e.type === 'order_created')).toBe(true);
   });
 
@@ -113,7 +113,7 @@ describe('Server-Side Safety Gate & Executor (Member A2)', () => {
       approved: false,
     };
 
-    saveCart(cheapCart);
+    await saveCart(cheapCart);
 
     const result = await executeCreateOrder({ cartId: cheapCart.id });
     expect(result.paypalOrderId).toBeDefined();
@@ -122,8 +122,8 @@ describe('Server-Side Safety Gate & Executor (Member A2)', () => {
 
   it('FR-A2-20: executeCaptureOrder re-checks price drift and captures payment', async () => {
     // Approve and create order
-    saveCart(sampleCart);
-    updateCartApproval(sampleCart.id, true);
+    await saveCart(sampleCart);
+    await updateCartApproval(sampleCart.id, true);
     const created = await executeCreateOrder({ cartId: sampleCart.id });
 
     // Capture payment through executor
@@ -132,17 +132,17 @@ describe('Server-Side Safety Gate & Executor (Member A2)', () => {
     expect(captured.captureId).toBeDefined();
 
     // Verify payment_captured audit event
-    const events = getAuditEvents(sampleCart.sessionId);
+    const events = await getAuditEvents(sampleCart.sessionId);
     expect(events.some((e) => e.type === 'payment_captured')).toBe(true);
   });
 
   it('FR-A2-20: blocks capture if cart price drifted after order creation', async () => {
-    saveCart(sampleCart);
-    updateCartApproval(sampleCart.id, true);
+    await saveCart(sampleCart);
+    await updateCartApproval(sampleCart.id, true);
     const created = await executeCreateOrder({ cartId: sampleCart.id });
 
     // Simulate price drift on the merchant side
-    saveCart({
+    await saveCart({
       ...sampleCart,
       total: 199, // price jumped from 162 to 199
     });

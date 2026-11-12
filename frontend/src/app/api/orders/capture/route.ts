@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Order id is required' }, { status: 400 });
   }
 
-  const order = getOrder(id);
+  const order = await getOrder(id);
   if (!order) {
     return NextResponse.json({ error: `Order ${id} not found` }, { status: 404 });
   }
