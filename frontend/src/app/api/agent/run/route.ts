@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (result.cart) {
-        await saveCart(result.cart);
+        await Promise.all(Object.values(result.cartsByCandidateId).map(saveCart));
         const decision = evaluatePolicy(result.cart, mandate, {
           sessionSpentTotal: await getSessionSpent(sessionId),
         });
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
             if (step.done) {
               const finalResult = step.value;
               if (finalResult.cart) {
-                await saveCart(finalResult.cart);
+                await Promise.all(Object.values(finalResult.cartsByCandidateId).map(saveCart));
                 const decision = evaluatePolicy(finalResult.cart, mandate, {
                   sessionSpentTotal: await getSessionSpent(sessionId),
                 });
