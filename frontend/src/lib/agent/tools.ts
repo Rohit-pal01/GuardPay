@@ -15,11 +15,22 @@ export async function searchProductsTool(params: {
   query: string;
   category?: string;
   limit?: number;
+  /** The hard ceiling used to guide the upstream product search. */
+  maxPrice?: number;
 }): Promise<Candidate[]> {
+  // Channel3 accepts natural-language search. Adding the hard price ceiling to
+  // the query makes its ranked results much more likely to satisfy the
+  // deterministic Mandate filter that still runs below.
+  const query = params.maxPrice !== undefined
+    ? `${params.query} under $${params.maxPrice}`
+    : params.query;
+
   const rawCandidates = await searchChannel3({
-    query: params.query,
+    query,
     category: params.category,
-    limit: params.limit || 5,
+    // Ask for a wider candidate pool before policy filtering. The UI still
+    // presents only the top three compliant products.
+    limit: params.limit || 20,
   });
 
   return rawCandidates.map(sanitizeCandidate);

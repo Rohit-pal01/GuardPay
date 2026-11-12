@@ -59,6 +59,7 @@ export async function* runBuyerAgentStream(
     const rawCandidates = await searchProductsTool({
       query: intent.query,
       category: intent.category,
+      maxPrice: Math.min(intent.maxPrice ?? Infinity, input.mandate.maxPerPurchase),
     });
 
     yield emit("candidates_found", `Found ${rawCandidates.length} product listings matching criteria`, {
@@ -75,7 +76,10 @@ export async function* runBuyerAgentStream(
 
     if (ranked.length === 0) {
       const reasons = filteredOut.map((f) => `${f.candidate.title}: ${f.reason}`);
-      const blockedEvent = emit("blocked", "All candidate products exceeded Mandate constraints", {
+      const summary = reasons.length > 0
+        ? `No products met the Mandate. ${reasons.slice(0, 2).join("; ")}`
+        : "No products met the Mandate constraints";
+      const blockedEvent = emit("blocked", summary, {
         filteredOutCount: filteredOut.length,
         reasons,
       });

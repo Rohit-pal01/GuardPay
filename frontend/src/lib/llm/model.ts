@@ -1,8 +1,13 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import type { LanguageModelV1 } from "ai";
 import { isReplayMode } from "./replay";
 
-export function getLLMModel(): LanguageModelV1 | null {
+/**
+ * Creates a model using the version of the AI SDK installed by this app.
+ *
+ * Do not narrow this to a legacy LanguageModelV1 type: Gemini's provider
+ * implements the current model specification and the `ai` package adapts it.
+ */
+export function getLLMModel() {
   const apiKey = process.env.GEMINI_API_KEY;
   const modelName = process.env.LLM_MODEL || "gemini-2.5-flash";
 
@@ -15,7 +20,7 @@ export function getLLMModel(): LanguageModelV1 | null {
     apiKey,
   });
 
-  return google(modelName) as unknown as LanguageModelV1;
+  return google(modelName);
 }
 
 export function isLLMConfigured(): boolean {

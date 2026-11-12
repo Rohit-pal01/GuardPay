@@ -18,7 +18,7 @@
     "@ai-sdk/google": "^4.0.117",
     "@neondatabase/serverless": "^1.2.0",
     "@paypal/react-paypal-js": "^8.8.3",
-    "ai": "^4.3.16",
+    "ai": "^7.0.169",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.4",
