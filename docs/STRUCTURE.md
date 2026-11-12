@@ -69,7 +69,14 @@ mandate/
     │   │   ├── prompts.ts          # Seller/buyer negotiation prompts
     │   │   └── seller-agent.ts     # Merchant agent with hidden cost floor
     │   ├── paypal/                 # PayPal integration (Member A)
-    │   │   └── index.ts
+    │   │   ├── capture.ts          # Capture an approved order and verify the PayPal reply
+    │   │   ├── client.ts           # Sandbox access token and request helper
+    │   │   ├── errors.test.ts      # PaypalError mapping tests
+    │   │   ├── errors.ts           # PaypalError codes: declined, expired, duplicate_capture, unknown
+    │   │   ├── index.ts            # createOrder, getOrder, captureOrder (agreed interface)
+    │   │   ├── mock.ts             # Mock PayPal, used only when USE_MOCKS=true
+    │   │   ├── orders.ts           # Create order (totals checked in cents)
+    │   │   └── paypal-flow.test.ts # Real-mode flow tests on a fake PayPal
     │   ├── policy/                 # Policy Engine & Guardrails (Member A2)
     │   │   ├── engine.ts           # Pure deterministic policy evaluator
     │   │   ├── rules.ts            # Policy rules (caps, categories, merchants, expiration, parity)

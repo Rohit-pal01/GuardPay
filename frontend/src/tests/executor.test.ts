@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Cart } from '@/contracts/cart';
 import type { Mandate } from '@/contracts/mandate';
 import { getAuditEvents, resetAuditLogs } from '@/lib/db/audit-repo';
@@ -6,6 +6,9 @@ import { getCart, resetCarts, saveCart, updateCartApproval } from '@/lib/db/cart
 import { resetMandates, saveMandate } from '@/lib/db/mandate-repo';
 import { resetOrders } from '@/lib/db/order-repo';
 import { executeCaptureOrder, executeCreateOrder } from '@/lib/policy/executor';
+
+// These tests run on the PayPal mock. They never call the real PayPal.
+vi.stubEnv('USE_MOCKS', 'true');
 
 describe('Server-Side Safety Gate & Executor (Member A2)', () => {
   const mandate: Mandate = {

@@ -29,3 +29,5 @@ export async function getOrder(paypalOrderId: string): Promise<PaymentOrder> {
 export async function captureOrder(paypalOrderId: string, cart: Cart): Promise<PaymentOrder> {
   return capturePayPalOrder(paypalOrderId, cart);
 }
+
+export * from './errors';
