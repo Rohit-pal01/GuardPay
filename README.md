@@ -1,10 +1,10 @@
 # GaurdPay
 
-**PayPal AI Hackathon Submission** · [paypalaihackathon.devpost.com](https://paypalaihackathon.devpost.com/)
+**Made for** [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/)
 
 > **"GaurdPay lets an AI agent shop and pay for you with real PayPal payments, while code, not the model, enforces your spending limits."**
 
-GaurdPay is our team's entry for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/) — an agentic commerce platform built on **Next.js (App Router)**, **TypeScript**, **Tailwind CSS**, **Vercel AI SDK + Zod**, **Channel3**, **Google Gemini / Groq**, and **PayPal Orders v2 Sandbox**. Tell the agent what you want to buy in natural language: it parses constraints, searches real product listings, ranks the top 3 with plain-English explanations, optionally negotiates a lower price with a seller agent, enforces your **Mandate** deterministically in code, requests human confirmation when required, and settles through PayPal Sandbox with an immutable SSE audit timeline.
+GaurdPay is an agentic commerce platform built on **Next.js (App Router)**, **TypeScript**, **Tailwind CSS**, **Vercel AI SDK + Zod**, **Channel3**, **Google Gemini / Groq**, and **PayPal Orders v2 Sandbox**. Tell the agent what you want to buy in natural language: it parses constraints, searches real product listings, ranks the top 3 with plain-English explanations, optionally negotiates a lower price with a seller agent, enforces your **Mandate** deterministically in code, requests human confirmation when required, and settles through PayPal Sandbox with an immutable SSE audit timeline.
 
 > **PayPal Sandbox Settlement Note:** Channel3 returns real products with retailer buy links, while PayPal Sandbox cannot pay external third-party retailers directly. Our PayPal order is created using our PayPal Sandbox business account as the merchant of record, attaching the selected product details, price, and retailer listing URL in the order line items (*sandbox settlement of a real product selection*).
 
