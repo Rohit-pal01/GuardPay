@@ -2,7 +2,7 @@ import type { Cart } from '@/contracts/cart';
 import { type PaymentOrder, PaymentOrderSchema } from '@/contracts/payment-order';
 import { paypalRequest } from './client';
 import { PaypalError, paypalErrorFromResponse } from './errors';
-import { mockCreatePayPalOrder } from './mock';
+import { mockCreatePayPalOrder, mockGetPayPalOrder } from './mock';
 
 // Money is added up in whole cents so the totals always match exactly.
 const toCents = (amount: number): number => Math.round(amount * 100);
@@ -102,4 +102,80 @@ export async function createPayPalOrder(
   });
 
   return { paypalOrderId: data.id, order };
+}
+
+export async function getPayPalOrder(
+  paypalOrderId: string,
+): Promise<PaymentOrder> {
+  if (process.env.USE_MOCKS === 'true') {
+    return mockGetPayPalOrder(paypalOrderId);
+  }
+
+  const res = await paypalRequest(
+    `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`,
+    {
+      method: 'GET',
+    },
+  );
+
+  if (!res.ok) {
+    throw await paypalErrorFromResponse(res, 'retrieve the order');
+  }
+
+  const data = (await res.json()) as {
+    id: string;
+    status: string;
+    purchase_units?: Array<{
+      reference_id?: string;
+      amount?: {
+        value?: string;
+        currency_code?: string;
+        breakdown?: {
+          item_total?: { value?: string };
+          tax_total?: { value?: string };
+          shipping?: { value?: string };
+        };
+      };
+      payments?: {
+        captures?: Array<{
+          id?: string;
+          status?: string;
+          amount?: { value?: string };
+        }>;
+      };
+    }>;
+    create_time?: string;
+    update_time?: string;
+  };
+
+  const unit = data.purchase_units?.[0];
+  const capture = unit?.payments?.captures?.[0];
+  const totalAmount = unit?.amount?.value ? Number(unit.amount.value) : 0;
+
+  let status: PaymentOrder['status'] = 'CREATED';
+  if (data.status === 'COMPLETED') status = 'COMPLETED';
+  else if (data.status === 'APPROVED') status = 'APPROVED';
+  else if (data.status === 'VOIDED') status = 'FAILED';
+
+  return PaymentOrderSchema.parse({
+    id: `ord-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    paypalOrderId: data.id,
+    captureId: capture?.id,
+    cartId: unit?.reference_id || 'unknown-cart',
+    mandateId: 'mandate-default',
+    sessionId: 'session-default',
+    status,
+    amount: totalAmount,
+    breakdown: {
+      itemTotal: unit?.amount?.breakdown?.item_total?.value ? Number(unit.amount.breakdown.item_total.value) : totalAmount,
+      taxTotal: unit?.amount?.breakdown?.tax_total?.value ? Number(unit.amount.breakdown.tax_total.value) : 0,
+      shipping: unit?.amount?.breakdown?.shipping?.value ? Number(unit.amount.breakdown.shipping.value) : 0,
+      total: totalAmount,
+    },
+    currency: 'USD',
+    items: [],
+    sandboxMode: true,
+    createdAt: data.create_time || new Date().toISOString(),
+    capturedAt: capture?.id ? (data.update_time || new Date().toISOString()) : undefined,
+  });
 }
