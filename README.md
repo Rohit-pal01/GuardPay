@@ -8,6 +8,8 @@ GaurdPay is an agentic commerce platform built on **Next.js (App Router)**, **Ty
 
 > **PayPal Sandbox Settlement Note:** Channel3 returns real products with retailer buy links, while PayPal Sandbox cannot pay external third-party retailers directly. Our PayPal order is created using our PayPal Sandbox business account as the merchant of record, attaching the selected product details, price, and retailer listing URL in the order line items (*sandbox settlement of a real product selection*).
 
+> **Autonomous-mode note:** PayPal Vault v3 requires a Vault-enabled business account and an initial buyer-consent flow, which are not guaranteed for every Sandbox account. GuardPay therefore uses a pre-authorized one-tap model in the demo: only carts that pass the deterministic Mandate and are at or below `autoApproveBelow` can proceed without the extra human-approval dialog. Vault setup-token and token-charge support remains available for Vault-entitled accounts.
+
 ---
 
 ## Core Flow
@@ -211,6 +213,19 @@ DEMO_MODE=replay
 
 - Set `PAYPAL_ENV=sandbox` with a PayPal Sandbox Business app `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` and `NEXT_PUBLIC_PAYPAL_CLIENT_ID` for PayPal JS Buttons.
 - Approve checkout with a PayPal Sandbox Personal buyer account, or leave `NEXT_PUBLIC_PAYPAL_CLIENT_ID` unset with `USE_MOCKS=true` to test the full flow locally.
+- Never use production credentials: this project intentionally targets `PAYPAL_ENV=sandbox` only.
+
+### Judge Quick Start
+
+```bash
+cd frontend
+pnpm install
+cp .env.example .env.local
+# Keep USE_MOCKS=true and DEMO_MODE=replay for a credential-free deterministic demo.
+pnpm dev
+```
+
+Open `http://localhost:3000/agent`, run a shopping request, and use the resulting policy decision and negotiation stream to reach checkout. For an interactive PayPal approval, replace the placeholder values in `.env.local` with Sandbox credentials and sign in with a Sandbox Personal buyer account.
 
 ---
 

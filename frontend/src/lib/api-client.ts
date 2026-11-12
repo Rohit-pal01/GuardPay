@@ -269,7 +269,7 @@ function buildMockCart(
         quantity: 1,
         retailerUrl: candidate.url,
         deliveryEstimate: candidate.deliveryEstimate,
-        deliveryEstimated: candidate.deliveryEstimated,
+        deliveryEstimated: candidate.deliveryEstimated ?? false,
       },
     ],
     subtotal,
@@ -304,7 +304,16 @@ async function consumeSse(
       const line = frame.split('\n').find((l) => l.startsWith('data: '));
       if (!line) continue;
       try {
-        onEvent(JSON.parse(line.slice(6)) as AgentEvent);
+        const event = JSON.parse(line.slice(6)) as AgentEvent;
+        // The agent services expose `payload`; the established UI consumes `data`.
+        // Preserve both while adapting the streamed event at this boundary.
+        if (!event.data && event.payload) {
+          event.data = event.payload;
+        }
+        if (event.type === 'negotiation_turn' && event.data && !event.data.turn) {
+          event.data = { turn: event.data };
+        }
+        onEvent(event);
       } catch {
         // ignore incomplete frame
       }
@@ -391,6 +400,7 @@ export async function runAgentStream(
   const budgetMatch = params.request.match(/\$(\d+(?:\.\d{1,2})?)/);
   const intent: ParsedIntent = {
     query: params.request.trim(),
+    features: [],
     maxBudget: budgetMatch ? Number(budgetMatch[1]) : undefined,
     category: q.includes('cable') ? 'accessories' : 'electronics',
     deliverBy: q.includes('friday')
@@ -569,7 +579,7 @@ export async function startNegotiationStream(
     await wait(280);
     emit({
       type: 'negotiation_turn',
-      message: `[Round ${turn.round}/4] ${turn.actor === 'buyer_agent' ? 'Buyer Agent' : 'Seller Agent'}: $${turn.proposedPrice.toFixed(2)}`,
+      message: `[Round ${turn.round}/4] ${turn.actor === 'buyer_agent' ? 'Buyer Agent' : 'Seller Agent'}: $${(turn.proposedPrice ?? 0).toFixed(2)}`,
       data: { turn },
     });
   }

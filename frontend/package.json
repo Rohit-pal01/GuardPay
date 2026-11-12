@@ -13,6 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.117",
     "@paypal/react-paypal-js": "^8.8.3",
     "ai": "^4.3.16",
     "class-variance-authority": "^0.7.1",
@@ -38,4 +39,3 @@
     "vitest": "^3.1.3"
   }
 }
-
