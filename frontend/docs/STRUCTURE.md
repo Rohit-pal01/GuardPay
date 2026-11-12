@@ -76,6 +76,8 @@ mandate/
     │   │   ├── index.ts            # createOrder, getOrder, captureOrder (agreed interface)
     │   │   ├── mock.ts             # Mock PayPal, used only when USE_MOCKS=true
     │   │   ├── orders.ts           # Create order (totals checked in cents)
+    │   │   ├── vault.ts            # Autonomous mode spike & pre-authorized one-tap fallback
+    │   │   ├── vault.test.ts       # Tests for getOrder, vaulting and autonomous mode
     │   │   └── paypal-flow.test.ts # Real-mode flow tests on a fake PayPal
     │   ├── policy/                 # Policy Engine & Guardrails (Member A2)
     │   │   ├── engine.ts           # Pure deterministic policy evaluator

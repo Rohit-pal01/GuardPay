@@ -1,0 +1,53 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# GuardPay CODEOWNERS (FR-A1-3 & Section 6 Merge-Proofing Rules)
+# Enforces folder boundaries so team members review changes to their own areas.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Default: Integrator (A1) owns repository root and unassigned files
+*                           @paramsharma01
+
+# Member A1: Payments & Integration (A2 is backup reviewer)
+/src/lib/paypal/            @paramsharma01 @ombhadri
+/frontend/src/lib/paypal/   @paramsharma01 @ombhadri
+/src/app/api/orders/        @paramsharma01 @ombhadri
+/frontend/src/app/api/orders/ @paramsharma01 @ombhadri
+
+# Member A2: Policy Engine, Executor, DB & Guardrail Routes (A1 backup)
+/src/lib/policy/            @ombhadri @paramsharma01
+/frontend/src/lib/policy/   @ombhadri @paramsharma01
+/src/lib/db/                @ombhadri @paramsharma01
+/frontend/src/lib/db/       @ombhadri @paramsharma01
+/src/app/api/mandate/       @ombhadri @paramsharma01
+/frontend/src/app/api/mandate/ @ombhadri @paramsharma01
+/src/app/api/cart/          @ombhadri @paramsharma01
+/frontend/src/app/api/cart/ @ombhadri @paramsharma01
+/src/app/api/audit/         @ombhadri @paramsharma01
+/frontend/src/app/api/audit/ @ombhadri @paramsharma01
+
+# Shared Contracts: All team members must agree on changes
+/src/contracts/             @paramsharma01 @ombhadri @rohit-pal01 @DevKumar005
+/frontend/src/contracts/    @paramsharma01 @ombhadri @rohit-pal01 @DevKumar005
+/ai/src/contracts/          @paramsharma01 @ombhadri @rohit-pal01 @DevKumar005
+
+# Member B: AI Buyer Agent, Channel3 Search, Negotiation, LLM
+/src/lib/agent/             @rohit-pal01 @paramsharma01
+/ai/src/lib/agent/          @rohit-pal01 @paramsharma01
+/src/lib/search/            @rohit-pal01 @paramsharma01
+/ai/src/lib/search/         @rohit-pal01 @paramsharma01
+/src/lib/negotiation/       @rohit-pal01 @paramsharma01
+/ai/src/lib/negotiation/    @rohit-pal01 @paramsharma01
+/src/lib/llm/               @rohit-pal01 @paramsharma01
+/ai/src/lib/llm/            @rohit-pal01 @paramsharma01
+/src/app/api/agent/         @rohit-pal01 @paramsharma01
+/ai/src/app/api/agent/      @rohit-pal01 @paramsharma01
+/src/app/api/negotiate/     @rohit-pal01 @paramsharma01
+/ai/src/app/api/negotiate/  @rohit-pal01 @paramsharma01
+/fixtures/                  @rohit-pal01 @paramsharma01
+/ai/fixtures/               @rohit-pal01 @paramsharma01
+
+# Member C: Frontend UI, Components, Pages & Documentation
+/src/components/            @DevKumar005 @paramsharma01
+/frontend/src/components/   @DevKumar005 @paramsharma01
+/src/app/                   @DevKumar005 @paramsharma01
+/frontend/src/app/          @DevKumar005 @paramsharma01
+/docs/                      @DevKumar005 @paramsharma01
