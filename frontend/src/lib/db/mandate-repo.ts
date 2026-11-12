@@ -1,51 +1,67 @@
+import { desc, eq } from 'drizzle-orm';
 import { type Mandate, MandateSchema, type MandateUpsert, MandateUpsertSchema } from '@/contracts/mandate';
+import { db, isDatabaseEnabled } from './client';
+import { mandates } from './schema';
 
 export const DEFAULT_MANDATE: Mandate = {
-  id: 'mandate-default',
-  maxPerPurchase: 250,
-  maxSessionTotal: 500,
+  id: 'mandate-default', maxPerPurchase: 250, maxSessionTotal: 500,
   allowedCategories: ['electronics', 'audio', 'accessories'],
   blockedMerchants: ['ShadyGadgets', 'UnverifiedOutlet', 'ShadyStore', 'RogueSeller'],
-  deliverBy: '2026-11-20',
-  autoApproveBelow: 75,
-  currency: 'USD',
-  expiresAt: '2026-12-31T23:59:59.000Z',
+  deliverBy: '2026-11-20', autoApproveBelow: 75, currency: 'USD', expiresAt: '2026-12-31T23:59:59.000Z',
 };
 
-const mandateStore = new Map<string, Mandate>([
-  [DEFAULT_MANDATE.id, DEFAULT_MANDATE],
-]);
-
+const mandateStore = new Map<string, Mandate>([[DEFAULT_MANDATE.id, DEFAULT_MANDATE]]);
 let activeMandateId = DEFAULT_MANDATE.id;
 
-export function getMandate(id: string): Mandate | undefined {
-  return mandateStore.get(id);
-}
-
-export function getActiveMandate(): Mandate {
-  const active = mandateStore.get(activeMandateId);
-  return active ?? DEFAULT_MANDATE;
-}
-
-export function saveMandate(data: MandateUpsert): Mandate {
-  const parsed = MandateUpsertSchema.parse(data);
-  const id = parsed.id || `mandate-${Date.now()}`;
-  const completeMandate: Mandate = MandateSchema.parse({
-    ...parsed,
-    id,
+function recordToMandate(record: typeof mandates.$inferSelect): Mandate {
+  return MandateSchema.parse({
+    ...record,
+    maxPerPurchase: Number(record.maxPerPurchase),
+    maxSessionTotal: Number(record.maxSessionTotal),
+    autoApproveBelow: Number(record.autoApproveBelow),
   });
-
-  mandateStore.set(id, completeMandate);
-  activeMandateId = id;
-  return completeMandate;
 }
 
-export function listMandates(): Mandate[] {
-  return Array.from(mandateStore.values());
+export async function getMandate(id: string): Promise<Mandate | undefined> {
+  if (!isDatabaseEnabled) return mandateStore.get(id);
+  const [record] = await db!.select().from(mandates).where(eq(mandates.id, id)).limit(1);
+  return record ? recordToMandate(record) : undefined;
 }
 
-export function resetMandates(): void {
-  mandateStore.clear();
-  mandateStore.set(DEFAULT_MANDATE.id, DEFAULT_MANDATE);
-  activeMandateId = DEFAULT_MANDATE.id;
+export async function getActiveMandate(): Promise<Mandate> {
+  if (!isDatabaseEnabled) return mandateStore.get(activeMandateId) ?? DEFAULT_MANDATE;
+  const [record] = await db!.select().from(mandates).orderBy(desc(mandates.updatedAt)).limit(1);
+  return record ? recordToMandate(record) : saveMandate(DEFAULT_MANDATE);
+}
+
+export async function saveMandate(data: MandateUpsert): Promise<Mandate> {
+  const parsed = MandateUpsertSchema.parse(data);
+  const mandate = MandateSchema.parse({ ...parsed, id: parsed.id || `mandate-${Date.now()}` });
+  if (!isDatabaseEnabled) {
+    mandateStore.set(mandate.id, mandate);
+    activeMandateId = mandate.id;
+    return mandate;
+  }
+  const now = new Date().toISOString();
+  await db!.insert(mandates).values({
+    ...mandate, maxPerPurchase: String(mandate.maxPerPurchase), maxSessionTotal: String(mandate.maxSessionTotal),
+    autoApproveBelow: String(mandate.autoApproveBelow), createdAt: now, updatedAt: now,
+  }).onConflictDoUpdate({ target: mandates.id, set: {
+    maxPerPurchase: String(mandate.maxPerPurchase), maxSessionTotal: String(mandate.maxSessionTotal),
+    allowedCategories: mandate.allowedCategories, blockedMerchants: mandate.blockedMerchants,
+    deliverBy: mandate.deliverBy, autoApproveBelow: String(mandate.autoApproveBelow),
+    currency: mandate.currency, expiresAt: mandate.expiresAt, updatedAt: now,
+  } });
+  return mandate;
+}
+
+export async function listMandates(): Promise<Mandate[]> {
+  if (!isDatabaseEnabled) return Array.from(mandateStore.values());
+  return (await db!.select().from(mandates).orderBy(desc(mandates.updatedAt))).map(recordToMandate);
+}
+
+export async function resetMandates(): Promise<void> {
+  if (!isDatabaseEnabled) {
+    mandateStore.clear(); mandateStore.set(DEFAULT_MANDATE.id, DEFAULT_MANDATE); activeMandateId = DEFAULT_MANDATE.id;
+  }
 }

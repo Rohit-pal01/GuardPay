@@ -215,6 +215,22 @@ DEMO_MODE=replay
 - Approve checkout with a PayPal Sandbox Personal buyer account, or leave `NEXT_PUBLIC_PAYPAL_CLIENT_ID` unset with `USE_MOCKS=true` to test the full flow locally.
 - Never use production credentials: this project intentionally targets `PAYPAL_ENV=sandbox` only.
 
+### Neon Database Persistence
+
+GuardPay uses in-memory storage only when `DATABASE_URL` is absent. With a Neon Postgres connection string configured, mandates, carts, payment orders, and audit events are persisted through Drizzle ORM. The checked-in migration is in `frontend/drizzle/`.
+
+```bash
+cd frontend
+
+# Generate a migration after changing src/lib/db/schema.ts
+pnpm db:generate
+
+# Apply checked-in migrations to the DATABASE_URL in .env.local
+pnpm db:migrate
+```
+
+For Render, add the same `DATABASE_URL` as a private environment variable before deploying. Never commit the connection string. The initial migration has already been applied to the configured Neon project; run `pnpm db:migrate` again only when a newer migration is added.
+
 ### Judge Quick Start
 
 ```bash

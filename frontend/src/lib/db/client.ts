@@ -1,8 +1,14 @@
-/**
- * Database client with fallback support (FR-A2-4 & FR-A2-5).
- * When DATABASE_URL is provided, connects to Neon Postgres.
- * Otherwise, falls back to the in-memory repository store.
- */
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
+
+const databaseUrl = process.env.DATABASE_URL?.trim();
+
+/** Tests use deterministic in-memory stores; app runs use Neon when configured. */
+export const isDatabaseEnabled = Boolean(databaseUrl) && process.env.NODE_ENV !== 'test';
+
+export const db = isDatabaseEnabled
+  ? drizzle({ client: neon(databaseUrl!) })
+  : null;
 
 export interface DbClientConfig {
   databaseUrl?: string;
@@ -10,9 +16,8 @@ export interface DbClientConfig {
 }
 
 export function getDbConfig(): DbClientConfig {
-  const databaseUrl = process.env.DATABASE_URL;
   return {
     databaseUrl,
-    isConfigured: Boolean(databaseUrl && databaseUrl.trim().length > 0),
+    isConfigured: isDatabaseEnabled,
   };
 }

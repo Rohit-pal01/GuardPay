@@ -9,14 +9,14 @@ export async function GET(req: NextRequest) {
   const id = searchParams.get('id');
 
   if (id) {
-    const mandate = getMandate(id);
+    const mandate = await getMandate(id);
     if (!mandate) {
       return NextResponse.json({ error: `Mandate ${id} not found` }, { status: 404 });
     }
     return NextResponse.json(mandate);
   }
 
-  const active = getActiveMandate();
+  const active = await getActiveMandate();
   return NextResponse.json(active);
 }
 
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const saved = saveMandate(parsed.data);
+    const saved = await saveMandate(parsed.data);
     return NextResponse.json(saved);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

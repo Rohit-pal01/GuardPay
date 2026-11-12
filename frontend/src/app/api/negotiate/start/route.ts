@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { candidateId, mandateId, sessionId } = parsed.data;
-    const mandate = getMandate(mandateId);
+    const mandate = await getMandate(mandateId);
 
     if (!mandate) {
       return NextResponse.json(
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
           break;
         }
         events.push(step.value);
-        appendAuditEvent(step.value);
+        await appendAuditEvent(step.value);
       }
 
       // If settled, update candidate price and build cart
@@ -64,13 +64,13 @@ export async function POST(req: NextRequest) {
         };
         cart = buildCartTool({ candidate: discountedCandidate, mandateId: mandate.id, sessionId });
         cart.status = "negotiated";
-        saveCart(cart);
+        await saveCart(cart);
         const decision = evaluatePolicy(cart, mandate, {
-          sessionSpentTotal: getSessionSpent(sessionId),
+          sessionSpentTotal: await getSessionSpent(sessionId),
         });
         const settlementEvent = createSettlementEvent(sessionId, negotiation.finalPrice, cart, decision);
         events.push(settlementEvent);
-        appendAuditEvent(settlementEvent);
+        await appendAuditEvent(settlementEvent);
       }
 
       return NextResponse.json({
@@ -100,9 +100,9 @@ export async function POST(req: NextRequest) {
                 };
                 const cart = buildCartTool({ candidate: discountedCandidate, mandateId: mandate.id, sessionId });
                 cart.status = "negotiated";
-                saveCart(cart);
+                await saveCart(cart);
                 const decision = evaluatePolicy(cart, mandate, {
-                  sessionSpentTotal: getSessionSpent(sessionId),
+                  sessionSpentTotal: await getSessionSpent(sessionId),
                 });
                 const settlementEvent = createSettlementEvent(
                   sessionId,
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
                   decision,
                   settledMessage,
                 );
-                appendAuditEvent(settlementEvent);
+                await appendAuditEvent(settlementEvent);
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify(settlementEvent)}\n\n`));
               }
               break;
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
               settledMessage = event.message;
               continue;
             }
-            appendAuditEvent(event);
+            await appendAuditEvent(event);
             controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
           }
         } catch (err: unknown) {
