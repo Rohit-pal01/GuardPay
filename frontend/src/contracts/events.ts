@@ -27,6 +27,7 @@ export const AgentEventSchema = z.object({
   timestamp: z.string(),
   message: z.string(),
   data: z.record(z.string(), z.unknown()).optional(),
+  payload: z.record(z.string(), z.any()).optional(),
 });
 
 export type AgentEvent = z.infer<typeof AgentEventSchema>;

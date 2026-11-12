@@ -87,7 +87,7 @@ export function NegotiationChat({
 
                   <Badge variant={turn.accepted ? 'allow' : 'outline'}>
                     {turn.accepted && <CheckCircle2 className="h-3 w-3" aria-hidden="true" />}
-                    {formatUsd(turn.proposedPrice)}
+                    {formatUsd(turn.proposedPrice ?? 0)}
                   </Badge>
                 </div>
 
