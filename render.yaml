@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: gaurdpay
+    runtime: node
+    plan: free
+    rootDir: frontend
+    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PAYPAL_ENV
+        value: sandbox
+      - key: USE_MOCKS
+        value: 'true'
+      - key: DEMO_MODE
+        value: replay
+
