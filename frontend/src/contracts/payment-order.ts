@@ -34,6 +34,7 @@ export const PaymentOrderSchema = z.object({
   sandboxMode: z.boolean(),
   createdAt: z.string(),
   capturedAt: z.string().optional(),
+  failureReason: z.string().optional(),
 });
 
 export type PaymentOrder = z.infer<typeof PaymentOrderSchema>;
