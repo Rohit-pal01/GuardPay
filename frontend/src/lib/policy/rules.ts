@@ -1,5 +1,6 @@
 import type { Cart } from '@/contracts/cart';
 import type { Mandate } from '@/contracts/mandate';
+import { isCategoryAllowed } from './category-matching';
 
 export interface PolicyRuleResult {
   ruleId: string;
@@ -73,8 +74,7 @@ export const ruleCategoryAllowList: PolicyRule = (cart, mandate) => {
     };
   }
 
-  const allowedSet = new Set(mandate.allowedCategories.map((c) => c.toLowerCase().trim()));
-  const unauthorized = cart.items.filter((item) => !allowedSet.has(item.category.toLowerCase().trim()));
+  const unauthorized = cart.items.filter((item) => !isCategoryAllowed(item.category, mandate.allowedCategories));
 
   const passed = unauthorized.length === 0;
   return {

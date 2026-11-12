@@ -1,6 +1,7 @@
 import { Candidate } from "@/contracts/product";
 import { Mandate } from "@/contracts/mandate";
 import { ParsedIntent } from "@/contracts/api";
+import { isCategoryAllowed } from "@/lib/policy/category-matching";
 
 export interface FilterOptions {
   mandate?: Mandate;
@@ -28,9 +29,7 @@ export function filterCandidates(
     (options.mandate?.blockedMerchants ?? []).map((m) => m.toLowerCase())
   );
 
-  const allowedCategories = new Set(
-    (options.mandate?.allowedCategories ?? []).map((c) => c.toLowerCase())
-  );
+  const allowedCategories = options.mandate?.allowedCategories ?? [];
 
   const targetDelivery = options.mandate?.deliverBy || options.intent?.deliverBy;
   const targetDate = targetDelivery ? new Date(targetDelivery).getTime() : null;
@@ -63,7 +62,7 @@ export function filterCandidates(
     }
 
     // 4. Allowed categories check (if configured)
-    if (allowedCategories.size > 0 && !allowedCategories.has(candidate.category.toLowerCase())) {
+    if (allowedCategories.length > 0 && !isCategoryAllowed(candidate.category, allowedCategories)) {
       filteredOut.push({
         candidate,
         reason: `Category '${candidate.category}' is not in allowed categories`,
