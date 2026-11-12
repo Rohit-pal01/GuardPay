@@ -70,7 +70,10 @@ mandate/
     │   │   └── seller-agent.ts     # Merchant agent with hidden cost floor
     │   ├── paypal/                 # PayPal integration (Member A)
     │   │   └── index.ts
-    │   ├── policy/                 # Policy Engine & Guardrails (Member A)
+    │   ├── policy/                 # Policy Engine & Guardrails (Member A2)
+    │   │   ├── engine.ts           # Pure deterministic policy evaluator
+    │   │   ├── rules.ts            # Policy rules (caps, categories, merchants, expiration, parity)
+    │   │   ├── executor.ts         # Server-side safety gate: calls PayPal create/capture, verifies DB approvals
     │   │   └── index.ts
     │   └── search/                 # Product search (Member B)
     │       ├── channel3.ts         # Channel3 client & fallback

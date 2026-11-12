@@ -51,3 +51,10 @@ export const NegotiateStartRequestSchema = z.object({
 
 export type NegotiateStartRequest = z.infer<typeof NegotiateStartRequestSchema>;
 
+export const AuditQuerySchema = z.object({
+  sessionId: z.string().min(1).optional(),
+});
+
+export type AuditQuery = z.infer<typeof AuditQuerySchema>;
+
+
