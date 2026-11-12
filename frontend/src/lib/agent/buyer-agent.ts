@@ -13,6 +13,7 @@ export interface BuyerAgentInput {
 
 export interface BuyerAgentResult {
   cart?: Cart;
+  cartsByCandidateId: Record<string, Cart>;
   selectedCandidate?: Candidate;
   candidates: Candidate[];
   events: AgentEvent[];
@@ -82,6 +83,7 @@ export async function* runBuyerAgentStream(
 
       return {
         candidates: [],
+        cartsByCandidateId: {},
         events,
       };
     }
@@ -91,21 +93,26 @@ export async function* runBuyerAgentStream(
       filteredOutCount: filteredOut.length,
     });
 
-    // Step 4: Build Cart with Top Pick
-    const topCandidate = ranked[0];
-    const cart = buildCartTool({
-      candidate: topCandidate,
-      mandateId: input.mandate.id,
-      sessionId,
-      quantity: 1,
-    });
+    // Step 4: Build and persist-ready carts for every displayed candidate.
+    // The UI lets the buyer select any top-three result, not only the first.
+    const displayedCandidates = ranked.slice(0, 3);
+    const cartsByCandidateId = Object.fromEntries(
+      displayedCandidates.map((candidate) => [
+        candidate.id,
+        buildCartTool({ candidate, mandateId: input.mandate.id, sessionId, quantity: 1 }),
+      ]),
+    );
+    const topCandidate = displayedCandidates[0];
+    const cart = cartsByCandidateId[topCandidate.id];
 
     yield emit("cart_ready", `Created draft cart for "${topCandidate.title}" at $${cart.total.toFixed(2)}`, {
       cart,
+      cartsByCandidateId,
     });
 
     return {
       cart,
+      cartsByCandidateId,
       selectedCandidate: topCandidate,
       candidates: ranked,
       events,
@@ -119,6 +126,7 @@ export async function* runBuyerAgentStream(
 
     return {
       candidates: [],
+      cartsByCandidateId: {},
       events,
     };
   }
@@ -129,7 +137,7 @@ export async function* runBuyerAgentStream(
  */
 export async function runBuyerAgent(input: BuyerAgentInput): Promise<BuyerAgentResult> {
   const iterator = runBuyerAgentStream(input);
-  let finalResult: BuyerAgentResult = { candidates: [], events: [] };
+  let finalResult: BuyerAgentResult = { candidates: [], cartsByCandidateId: {}, events: [] };
 
   while (true) {
     const step = await iterator.next();
